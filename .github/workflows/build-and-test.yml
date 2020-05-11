@@ -14,6 +14,8 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    env:
+      SA_PASSWORD: NotASecret!12
 
     steps:
     - uses: actions/checkout@v2
@@ -22,13 +24,13 @@ jobs:
       with:
         dotnet-version: 3.1.201
       env:
-        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        NUGET_AUTH_TOKEN: RequiredButNotUsed
     - name: NuGet Restore
       run: dotnet restore -v n
     - name: Build
       run: dotnet build
     - name: Setup SQL Server container
-      run: test/setup.ps1 -pw "NotASecret!12"
+      run: test/setup.ps1
       shell: pwsh
     - name: Run unit tests
       run: dotnet test --no-build --verbosity normal
