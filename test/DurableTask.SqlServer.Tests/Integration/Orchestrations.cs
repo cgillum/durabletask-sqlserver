@@ -75,6 +75,7 @@
                 implementation: (ctx, input) => ctx.CreateTimer(ctx.CurrentUtcDateTime.Add(delay), input));
 
             OrchestrationState state = await instance.WaitForCompletion(
+                timeout: TimeSpan.FromSeconds(10),
                 expectedOutput: input);
 
             // Verify that the delay actually happened
