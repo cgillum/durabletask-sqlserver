@@ -287,7 +287,8 @@
                 this.server = new Server(new ServerConnection(new SqlServerProviderOptions().CreateConnection()));
                 this.testDb = new Database(this.server, databaseName)
                 {
-                    Collation = "Latin1_General_100_BIN2_UTF8",
+                    // For SQL Server 2019, "Latin1_General_100_BIN2_UTF8" is preferred
+                    Collation = "Latin1_General_100_BIN2",
                 };
 
                 this.ConnectionString = 

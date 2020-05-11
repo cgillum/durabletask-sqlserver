@@ -37,6 +37,8 @@
         async Task IAsyncLifetime.InitializeAsync()
         {
             var provider = new SqlServerOrchestrationService(this.options);
+            await ((IOrchestrationService)provider).CreateIfNotExistsAsync();
+
             this.worker = await new TaskHubWorker(provider).StartAsync();
             this.client = new TaskHubClient(provider);
         }
@@ -310,7 +312,8 @@
                     Assert.Null(state.Input);
                 }
 
-                Assert.True(state.CreatedTime >= this.startTime);
+                // For created time, account for potential clock skew
+                Assert.True(state.CreatedTime >= this.startTime.AddMinutes(-5));
                 Assert.True(state.LastUpdatedTime > state.CreatedTime);
                 Assert.True(state.CompletedTime > state.CreatedTime);
                 Assert.NotNull(state.OrchestrationInstance);

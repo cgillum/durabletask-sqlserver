@@ -1,0 +1,30 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ master, testing ]
+    paths-ignore: 
+      - '**.md'
+  pull_request:
+    branches: [ master, testing ]
+    paths-ignore: 
+      - '**.md'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+    - name: Build
+      run: dotnet build
+    - name: Setup SQL Server container
+      run: test/setup.ps1
+      shell: pwsh
+    - name: Run unit tests
+      run: dotnet test --no-build --verbosity normal
