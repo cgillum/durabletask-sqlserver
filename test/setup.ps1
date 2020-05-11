@@ -18,6 +18,9 @@ docker run --name mssql-server -e 'ACCEPT_EULA=Y' -e "SA_PASSWORD=$pw" -e "MSSQL
 Write-Host "Sleeping for 10 seconds to let the container finish initializing..." -ForegroundColor Yellow
 Start-Sleep -Seconds 10
 
+# Check to see what containers are running
+docker ps
+
 # Create the database with strict binary collation
 Write-Host "Creating '$dbname' database with '$collation' collation" -ForegroundColor DarkYellow
 docker exec -d mssql-server /opt/mssql-tools/bin/sqlcmd -S . -U sa -P "$pw" -Q "CREATE DATABASE [$dbname] COLLATE $collation"

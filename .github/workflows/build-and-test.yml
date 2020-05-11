@@ -28,7 +28,7 @@ jobs:
     - name: Build
       run: dotnet build
     - name: Setup SQL Server container
-      run: test/setup.ps1
+      run: test/setup.ps1 -pw "NotASecret!12"
       shell: pwsh
     - name: Run unit tests
       run: dotnet test --no-build --verbosity normal
