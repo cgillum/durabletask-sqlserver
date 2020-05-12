@@ -19,7 +19,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET Core
+    - name: Setup .NET Core 3.1
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.201
@@ -32,5 +32,7 @@ jobs:
     - name: Setup SQL Server container
       run: test/setup.ps1
       shell: pwsh
-    - name: Run unit tests
-      run: dotnet test --no-build --verbosity normal
+    - name: Durable framework tests
+      run: dotnet test --no-build --verbosity normal ./test/DurableTask.SqlServer.Tests/DurableTask.SqlServer.Tests.csproj
+    - name: Functions runtime tests
+      run: dotnet test --no-build --verbosity normal ./test/DurableTask.SqlServer.AzureFunctions.Tests/DurableTask.SqlServer.AzureFunctions.Tests.csproj
