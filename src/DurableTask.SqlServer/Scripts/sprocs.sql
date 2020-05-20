@@ -174,7 +174,7 @@ BEGIN
         OutputText = new.PayloadText,
         LastUpdatedTime = SYSUTCDATETIME(),
         CompletedTime = new.CompletedTime,
-        LockExpiration = NULL --new.LockExpiration
+        LockExpiration = new.LockExpiration
     FROM
         Instances existing
         INNER JOIN @UpdatedInstanceStatus new ON new.InstanceID = existing.ID
