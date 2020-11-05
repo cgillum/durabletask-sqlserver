@@ -360,9 +360,9 @@
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1), combinedCts.Token);
                 }
-                catch (TaskCanceledException e)
+                catch (TaskCanceledException)
                 {
-                    if (e.CancellationToken == timeoutCts.Token)
+                    if (timeoutCts.Token.IsCancellationRequested)
                     {
                         throw new TimeoutException($"A caller-specified timeout of {timeout} has expired, but instance '{instanceId}' is still in an {state?.OrchestrationStatus.ToString() ?? "unknown"} state.");
                     }
@@ -411,9 +411,17 @@
             await SqlUtils.ExecuteNonQueryAsync(command, this.traceHelper);
         }
 
-        public override Task PurgeOrchestrationHistoryAsync(DateTime thresholdDateTimeUtc, OrchestrationStateTimeRangeFilterType timeRangeFilterType)
+        public override async Task PurgeOrchestrationHistoryAsync(
+            DateTime thresholdDateTimeUtc,
+            OrchestrationStateTimeRangeFilterType timeRangeFilterType)
         {
-            throw new NotImplementedException();
+            using SqlConnection connection = await this.GetAndOpenConnectionAsync();
+            using SqlCommand command = this.GetSprocCommand(connection, "dt.PurgeInstanceState");
+
+            command.Parameters.Add("@ThresholdTime", SqlDbType.DateTime2).Value = thresholdDateTimeUtc;
+            command.Parameters.Add("@FilterType", SqlDbType.TinyInt).Value = (int)timeRangeFilterType;
+
+            await SqlUtils.ExecuteNonQueryAsync(command, this.traceHelper);
         }
 
         class ExtendedOrchestrationWorkItem : TaskOrchestrationWorkItem

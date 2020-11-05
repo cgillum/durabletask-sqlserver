@@ -123,12 +123,9 @@ BEGIN
         CONSTRAINT FK_Instances_CustomStatus_Payloads FOREIGN KEY (TaskHub, InstanceID, CustomStatusPayloadID) REFERENCES dt.Payloads(TaskHub, InstanceID, PayloadID)
 	)
 
-    -- This index is filtered to include only instances ready to be picked up for execution
-    CREATE INDEX IX_Instances_LockNext ON dt.Instances(TaskHub, RuntimeStatus)
-    INCLUDE ([LockExpiration])
-    WHERE [RuntimeStatus] IN ('Pending', 'Running')
-
-    -- TODO: Indexes to improve query search performance
+    -- This index is used by LockNext and Purge logic
+    CREATE INDEX IX_Instances_RuntimeStatus ON dt.Instances(TaskHub, RuntimeStatus)
+        INCLUDE ([LockExpiration], [CreatedTime], [CompletedTime])
 END
 
 IF OBJECT_ID(N'dt.NewEvents', 'U') IS NULL

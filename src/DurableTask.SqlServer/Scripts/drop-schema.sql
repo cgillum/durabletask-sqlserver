@@ -10,6 +10,7 @@ DROP PROCEDURE IF EXISTS dt.CreateInstance
 DROP PROCEDURE IF EXISTS dt.QuerySingleOrchestration
 DROP PROCEDURE IF EXISTS dt.RaiseEvent
 DROP PROCEDURE IF EXISTS dt.TerminateInstance
+DROP PROCEDURE IF EXISTS dt.PurgeInstanceState
 
 -- Private sprocs
 DROP PROCEDURE IF EXISTS dt._AddOrchestrationEvents
