@@ -35,5 +35,8 @@ DROP TYPE IF EXISTS dt.HistoryEvents
 DROP TYPE IF EXISTS dt.OrchestrationEvents
 DROP TYPE IF EXISTS dt.TaskEvents
 
--- This must be the last DROP statement
+-- This must be the last DROP statement related to schema
 DROP SCHEMA IF EXISTS dt
+
+-- Roles
+DROP ROLE IF EXISTS dt_runtime

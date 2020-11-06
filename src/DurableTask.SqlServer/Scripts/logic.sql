@@ -4,8 +4,15 @@
 AS
 BEGIN
     -- Implemented as a function to make it easier to customize
-    -- WARNING: Long usernames may be truncated
-    RETURN CONVERT(varchar(50), CURRENT_USER)
+    DECLARE @TaskHub varchar(50)
+    IF LEN(CURRENT_USER) <= 50
+        -- default behavior is to just use the username
+        SET @TaskHub = CONVERT(varchar(50), CURRENT_USER)
+    ELSE
+        -- if the username is too long, keep the first 16 characters and hash the rest
+        SET @TaskHub = CONVERT(varchar(16), CURRENT_USER) + '__' + CONVERT(varchar(32), HashBytes('MD5', CURRENT_USER), 2)
+
+    RETURN @TaskHub
 END
 GO
 

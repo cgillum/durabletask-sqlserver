@@ -25,7 +25,7 @@
         Task IAsyncLifetime.DisposeAsync() => this.testService.DisposeAsync();
 
         [Fact]
-        public async Task EmptyOrchestration_Completes()
+        public async Task EmptyOrchestration()
         {
             string input = $"Hello {DateTime.UtcNow:o}";
             string orchestrationName = "EmptyOrchestration";
@@ -48,7 +48,7 @@
         }
 
         [Fact]
-        public async Task OrchestrationWithTimer_Completes()
+        public async Task SingleTimer()
         {
             string input = $"Hello {DateTime.UtcNow:o}";
             string orchestrationName = "OrchestrationWithTimer";
@@ -82,7 +82,7 @@
         }
 
         [Fact]
-        public async Task Orchestration_IsReplaying_Works()
+        public async Task IsReplaying()
         {
             TestInstance<string> instance = await this.testService.RunOrchestration<List<bool>, string>(
                 null,
@@ -107,7 +107,7 @@
         }
 
         [Fact]
-        public async Task OrchestrationWithActivity_Completes()
+        public async Task SingleActivity()
         {
             string input = $"[{DateTime.UtcNow:o}]";
 
@@ -127,7 +127,7 @@
         [InlineData(1)]
         [InlineData(10)]
         [InlineData(100)]
-        public async Task OrchestrationsWithActivityChain_Completes(int parallelCount)
+        public async Task ActivityChain(int parallelCount)
         {
             List<TestInstance<string>> instances = await this.testService.RunOrchestrations<int, string>(
                 parallelCount,
@@ -155,7 +155,7 @@
         }
 
         [Fact]
-        public async Task OrchestrationWithException_Fails()
+        public async Task OrchestrationException()
         {
             string errorMessage = "Kah-BOOOOOM!!!";
 
@@ -172,7 +172,7 @@
         }
 
         [Fact]
-        public async Task OrchestrationWithActivityFailure_Fails()
+        public async Task ActivityException()
         {
             // Performs a delay and then returns the input
             TestInstance<string> instance = await this.testService.RunOrchestration(
@@ -189,7 +189,7 @@
         }
 
         [Fact]
-        public async Task OrchestrationWithActivityFanOut()
+        public async Task ActivityFanOut()
         {
             TestInstance<string> instance = await this.testService.RunOrchestration<string[], string>(
                 null,
@@ -218,7 +218,7 @@
         [Theory]
         [InlineData(1)]
         [InlineData(100)]
-        public async Task OrchestrationWithExternalEvents(int eventCount)
+        public async Task ExternalEvents(int eventCount)
         {
             TaskCompletionSource<int> tcs = null;
 
@@ -241,7 +241,7 @@
                 onEvent: (ctx, name, value) =>
                 {
                     Assert.Equal("Event" + value, name);
-                    tcs.SetResult(int.Parse(value));
+                    tcs.TrySetResult(int.Parse(value));
                 });
 
             for (int i = 0; i < eventCount; i++)
@@ -255,7 +255,7 @@
         }
 
         [Fact]
-        public async Task TerminateOrchestration()
+        public async Task Termination()
         {
             string input = $"Hello {DateTime.UtcNow:o}";
             string orchestrationName = "OrchestrationWithTimer";
