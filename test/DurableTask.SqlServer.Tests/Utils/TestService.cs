@@ -47,12 +47,14 @@
 
         public async Task InitializeAsync()
         {
+            // The initialization requires administrative credentials (default)
+            await new SqlOrchestrationService(this.options).CreateIfNotExistsAsync();
+
+            // The runtime will use low-privilege credentials
             string taskHubConnectionString = await this.CreateTaskHubLoginAsync();
             this.options.ConnectionString = taskHubConnectionString;
 
             var provider = new SqlOrchestrationService(this.options);
-            await ((IOrchestrationService)provider).CreateIfNotExistsAsync();
-
             this.worker = await new TaskHubWorker(provider, this.loggerFactory).StartAsync();
             this.client = new TaskHubClient(provider, loggerFactory: this.loggerFactory);
         }

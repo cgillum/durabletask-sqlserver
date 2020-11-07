@@ -5,6 +5,7 @@
     using System.Data;
     using System.Data.Common;
     using System.Data.SqlTypes;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -196,7 +197,8 @@
         {
             ExtendedOrchestrationWorkItem currentWorkItem = (ExtendedOrchestrationWorkItem)workItem;
 
-            this.traceHelper.CheckpointingOrchestration(orchestrationState);
+            this.traceHelper.CheckpointStarting(orchestrationState);
+            Stopwatch sw = Stopwatch.StartNew();
 
             using SqlConnection connection = await this.GetAndOpenConnectionAsync();
             using SqlCommand command = this.GetSprocCommand(connection, "dt._CheckpointOrchestration");
@@ -237,6 +239,8 @@
             {
                 this.orchestrationBackoffHelper.Reset();
             }
+
+            this.traceHelper.CheckpointCompleted(orchestrationState, sw);
         }
 
         public override Task AbandonTaskOrchestrationWorkItemAsync(TaskOrchestrationWorkItem workItem)

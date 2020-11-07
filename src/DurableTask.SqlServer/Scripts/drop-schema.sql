@@ -38,5 +38,17 @@ DROP TYPE IF EXISTS dt.TaskEvents
 -- This must be the last DROP statement related to schema
 DROP SCHEMA IF EXISTS dt
 
--- Roles
+-- Roles: all members have to be dropped before the role can be dropped
+DECLARE @rolename sysname = 'dt_runtime';
+DECLARE @cmd AS nvarchar(MAX) = N'';
+SELECT @cmd = @cmd + '
+    ALTER ROLE ' + QUOTENAME(@rolename) + ' DROP MEMBER ' + QUOTENAME(members.[name]) + ';'
+FROM sys.database_role_members AS rolemembers
+    JOIN sys.database_principals AS roles 
+        ON roles.[principal_id] = rolemembers.[role_principal_id]
+    JOIN sys.database_principals AS members 
+        ON members.[principal_id] = rolemembers.[member_principal_id]
+WHERE roles.[name] = @rolename
+EXEC(@cmd);
+
 DROP ROLE IF EXISTS dt_runtime

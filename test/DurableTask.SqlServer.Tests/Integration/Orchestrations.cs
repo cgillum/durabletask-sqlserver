@@ -44,7 +44,8 @@
             LogAssert.Sequence(
                 this.testService.LogProvider,
                 LogAssert.AcquiredAppLock(),
-                LogAssert.CheckpointingOrchestration(orchestrationName));
+                LogAssert.CheckpointStarting(orchestrationName),
+                LogAssert.CheckpointCompleted(orchestrationName));
         }
 
         [Fact]
@@ -64,7 +65,7 @@
                     return result;
                 });
 
-            TimeSpan timeout = TimeSpan.FromSeconds(10);
+            TimeSpan timeout = delay + TimeSpan.FromSeconds(10);
             OrchestrationState state = await instance.WaitForCompletion(
                 timeout,
                 expectedOutput: input);
@@ -77,8 +78,10 @@
             LogAssert.Sequence(
                 this.testService.LogProvider,
                 LogAssert.AcquiredAppLock(),
-                LogAssert.CheckpointingOrchestration(orchestrationName),
-                LogAssert.CheckpointingOrchestration(orchestrationName));
+                LogAssert.CheckpointStarting(orchestrationName),
+                LogAssert.CheckpointCompleted(orchestrationName),
+                LogAssert.CheckpointStarting(orchestrationName),
+                LogAssert.CheckpointCompleted(orchestrationName));
         }
 
         [Fact]
@@ -91,9 +94,9 @@
                 {
                     var list = new List<bool>();
                     list.Add(ctx.IsReplaying);
-                    await ctx.CreateTimer(ctx.CurrentUtcDateTime, 0);
+                    await ctx.CreateTimer(DateTime.MinValue, 0);
                     list.Add(ctx.IsReplaying);
-                    await ctx.CreateTimer(ctx.CurrentUtcDateTime, 0);
+                    await ctx.CreateTimer(DateTime.MinValue, 0);
                     list.Add(ctx.IsReplaying);
                     return list;
                 });
@@ -269,8 +272,7 @@
 
             // Give the orchestration one second to start and then terminate it.
             // We wait to ensure that the log output we expect is deterministic.
-            await Task.Delay(TimeSpan.FromSeconds(1));
-
+            await instance.WaitForStart();
             await instance.TerminateAsync("Bye!");
 
             TimeSpan timeout = TimeSpan.FromSeconds(5);
@@ -284,8 +286,10 @@
             LogAssert.Sequence(
                 this.testService.LogProvider,
                 LogAssert.AcquiredAppLock(),
-                LogAssert.CheckpointingOrchestration(orchestrationName),
-                LogAssert.CheckpointingOrchestration(orchestrationName));
+                LogAssert.CheckpointStarting(orchestrationName),
+                LogAssert.CheckpointCompleted(orchestrationName),
+                LogAssert.CheckpointStarting(orchestrationName),
+                LogAssert.CheckpointCompleted(orchestrationName));
         }
 
 
@@ -299,15 +303,14 @@
                 {
                     if (input < 10)
                     {
-                        await ctx.CreateTimer<object>(ctx.CurrentUtcDateTime, null);
+                        await ctx.CreateTimer<object>(DateTime.MinValue, null);
                         ctx.ContinueAsNew(input + 1);
                     }
 
                     return input;
                 });
 
-            TimeSpan timeout = TimeSpan.FromSeconds(5);
-            await instance.WaitForCompletion(timeout, expectedOutput: 10, continuedAsNew: true);
+            await instance.WaitForCompletion(expectedOutput: 10, continuedAsNew: true);
         }
     }
 }

@@ -133,7 +133,7 @@
         {
             if (timeout == default)
             {
-                timeout = TimeSpan.FromSeconds(5);
+                timeout = TimeSpan.FromSeconds(10);
             }
 
             if (Debugger.IsAttached)
