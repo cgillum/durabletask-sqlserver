@@ -92,6 +92,27 @@
                 $"{asserts.Length} log entries were expected but only {actualLogs.Length} were found. Expected:{expected}Actual:{actual}");
         }
 
+        public static void Contains(TestLogProvider logProvider, params LogAssert[] asserts)
+        {
+            var remaining = new HashSet<LogAssert>(asserts);
+
+            foreach (LogEntry logEntry in GetLogs(logProvider))
+            {
+                foreach (LogAssert assert in remaining.ToArray())
+                {
+                    if (string.Equals(assert.EventName, logEntry.EventId.Name) &&
+                        assert.EventId == logEntry.EventId.Id &&
+                        assert.Level == logEntry.LogLevel &&
+                        logEntry.Message.Contains(assert.MessageSubstring))
+                    {
+                        remaining.Remove(assert);
+                    }
+                }
+            }
+
+            Assert.Empty(remaining);
+        }
+
         internal static void ValidateStructuredLogFields(LogEntry log)
         {
             // All log entries are expected to have dictionary state

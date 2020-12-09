@@ -141,9 +141,8 @@
                 It.IsAny<OrchestrationState>()), Times.Exactly(2));
 
             // Check logs to confirm that a duplicate execution was detected
-            LogAssert.Sequence(
+            LogAssert.Contains(
                 this.testService.LogProvider,
-                LogAssert.AcquiredAppLock(),
                 LogAssert.CheckpointStarting(orchestrationName),
                 LogAssert.CheckpointCompleted(orchestrationName),
                 LogAssert.CheckpointStarting(orchestrationName),
@@ -264,9 +263,8 @@
                 Times.Exactly(2));
 
             // Check logs to confirm that a duplicate execution was detected
-            LogAssert.Sequence(
+            LogAssert.Contains(
                 this.testService.LogProvider,
-                LogAssert.AcquiredAppLock(),
                 LogAssert.CheckpointStarting(orchestrationName),
                 LogAssert.CheckpointCompleted(orchestrationName),
                 LogAssert.CheckpointStarting(orchestrationName),
