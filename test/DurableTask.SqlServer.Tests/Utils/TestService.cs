@@ -227,13 +227,24 @@
 
         static async Task ExecuteCommandAsync(string commandText)
         {
-            string connectionString = SqlProviderOptions.GetDefaultConnectionString();
-            await using SqlConnection connection = new SqlConnection(connectionString);
-            await using SqlCommand command = connection.CreateCommand();
-            await command.Connection.OpenAsync();
+            for (int retry = 0; retry < 3; retry++)
+            {
+                try
+                {
+                    string connectionString = SqlProviderOptions.GetDefaultConnectionString();
+                    await using SqlConnection connection = new SqlConnection(connectionString);
+                    await using SqlCommand command = connection.CreateCommand();
+                    await command.Connection.OpenAsync();
 
-            command.CommandText = commandText;
-            await command.ExecuteNonQueryAsync();
+                    command.CommandText = commandText;
+                    await command.ExecuteNonQueryAsync();
+                    break;
+                }
+                catch (SqlException e) when (e.Number == 15434)
+                {
+                    // 15434 : Could not drop login 'XXX' as the user is currently logged in.
+                }
+            }
         }
 
         static string GeneratePassword()
