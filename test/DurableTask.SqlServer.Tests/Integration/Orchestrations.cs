@@ -112,6 +112,36 @@
         }
 
         [Fact]
+        public async Task CurrentDateTimeUtc()
+        {
+            TestInstance<string> instance = await this.testService.RunOrchestration<bool, string>(
+                null,
+                orchestrationName: "CurrentDateTimeUtc",
+                implementation: async (ctx, _) =>
+                {
+                    DateTime currentDate1 = ctx.CurrentUtcDateTime;
+                    DateTime originalDate1 = await ctx.ScheduleTask<DateTime>("Echo", "", currentDate1);
+                    if (currentDate1 != originalDate1)
+                    {
+                        return false;
+                    }
+
+                    DateTime currentDate2 = ctx.CurrentUtcDateTime;
+                    DateTime originalDate2 = await ctx.ScheduleTask<DateTime>("Echo", "", currentDate2);
+                    if (currentDate2 != originalDate2)
+                    {
+                        return false;
+                    }
+
+                    return currentDate1 != currentDate2;
+                },
+                activities: ("Echo", TestService.MakeActivity((TaskContext ctx, object input) => input)));
+
+            OrchestrationState state = await instance.WaitForCompletion();
+            Assert.True((bool)JToken.Parse(state.Output));
+        }
+
+        [Fact]
         public async Task SingleActivity()
         {
             string input = $"[{DateTime.UtcNow:o}]";

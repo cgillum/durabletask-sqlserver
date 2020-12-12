@@ -421,11 +421,6 @@ BEGIN
 
     DECLARE @TaskHub varchar(50) = dt.CurrentTaskHub()
 
-    -- *** IMPORTANT ***
-    -- To prevent deadlocks, it is important to maintain consistent table access
-    -- order across all stored procedures that execute within a transaction.
-    -- Table order for this sproc: Instances --> Payloads (--> History --> NewEvents --> NewTasks) --> NewEvents --> History --> NewTasks
-
     DECLARE @InputPayloadID uniqueidentifier
     DECLARE @CustomStatusPayloadID uniqueidentifier
     DECLARE @ExistingCustomStatusPayload varchar(MAX)
@@ -522,6 +517,28 @@ BEGIN
     IF @@ROWCOUNT = 0
         THROW 50000, 'The instance does not exist.', 1;
 
+    -- External event messages can create new instances
+    -- NOTE: There is a chance this could result in deadlocks if two 
+    --       instances are sending events to each other at the same time
+    INSERT INTO Instances (
+        [TaskHub],
+        [InstanceID],
+        [ExecutionID],
+        [Name],
+        [RuntimeStatus])
+    SELECT DISTINCT
+        @TaskHub,
+        E.[InstanceID],
+        NEWID(),
+        SUBSTRING(E.[InstanceID], 2, CHARINDEX('@', E.[InstanceID], 2) - 2),
+        'Pending'
+    FROM @NewOrchestrationEvents E
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM dt.Instances I
+        WHERE [TaskHub] = @TaskHub AND I.[InstanceID] = E.[InstanceID])
+    GROUP BY E.[InstanceID]
+
     -- Insert new event data payloads into the Payloads table in batches.
     -- PayloadID values are provided by the caller only if a payload exists.
     INSERT INTO Payloads ([TaskHub], [InstanceID], [PayloadID], [Text], [Reason])
@@ -578,6 +595,7 @@ BEGIN
         [SequenceNumber],
         [EventType],
         [TaskID],
+        [Timestamp],
         [IsPlayed],
         [Name],
         [RuntimeStatus],
@@ -590,6 +608,7 @@ BEGIN
         H.[SequenceNumber],
         H.[EventType],
         H.[TaskID],
+        H.[Timestamp],
         H.[IsPlayed],
         H.[Name],
         H.[RuntimeStatus],
