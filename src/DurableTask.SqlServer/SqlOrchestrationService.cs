@@ -210,9 +210,19 @@
             return null;
         }
 
-        public override Task RenewTaskOrchestrationWorkItemLockAsync(TaskOrchestrationWorkItem workItem)
+        public override async Task RenewTaskOrchestrationWorkItemLockAsync(TaskOrchestrationWorkItem workItem)
         {
-            throw new NotImplementedException();
+            using SqlConnection connection = await this.GetAndOpenConnectionAsync();
+            using SqlCommand command = this.GetSprocCommand(connection, "dt._RenewOrchestrationLocks");
+
+            DateTime lockExpiration = DateTime.UtcNow.Add(this.options.WorkItemLockTimeout);
+
+            command.Parameters.Add("@InstanceID", SqlDbType.VarChar, size: 100).Value = workItem.InstanceId;
+            command.Parameters.Add("@LockExpiration", SqlDbType.DateTime2).Value = lockExpiration;
+
+            await SqlUtils.ExecuteNonQueryAsync(command, this.traceHelper);
+
+            workItem.LockedUntilUtc = lockExpiration;
         }
 
         public override async Task CompleteTaskOrchestrationWorkItemAsync(

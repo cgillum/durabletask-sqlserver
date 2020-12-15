@@ -697,8 +697,8 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE dt.QuerySingleOrchestration
-    @InstanceID nvarchar(100),
-    @ExecutionID nvarchar(100) = NULL,
+    @InstanceID varchar(100),
+    @ExecutionID varchar(50) = NULL,
     @FetchInput bit = 1,
     @FetchOutput bit = 1
 AS
@@ -787,6 +787,20 @@ BEGIN
     WHERE [TaskHub] = @TaskHub AND [SequenceNumber] = @SequenceNumber
 
     COMMIT TRANSACTION
+END
+GO
+
+
+CREATE OR ALTER PROCEDURE dt._RenewOrchestrationLocks
+    @InstanceID varchar(100),
+    @LockExpiration datetime2
+AS
+BEGIN
+    DECLARE @TaskHub varchar(50) = dt.CurrentTaskHub()
+
+    UPDATE Instances
+    SET [LockExpiration] = @LockExpiration
+    WHERE [TaskHub] = @TaskHub AND [InstanceID] = @InstanceID
 END
 GO
 

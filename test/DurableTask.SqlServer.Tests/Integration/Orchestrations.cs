@@ -355,10 +355,15 @@
                 LogAssert.CheckpointCompleted(orchestrationName));
         }
 
-
-        [Fact]
-        public async Task ContinueAsNew()
+        [Theory]
+        [InlineData(10)]
+        [InlineData(300)]
+        public async Task ContinueAsNew(int lockTimeoutInSeconds)
         {
+            // If the lock timeout is less than 60 seconds, then the dispatcher will also 
+            // execute a code path that renews the task orchestration work item.
+            this.testService.OrchestrationServiceOptions.WorkItemLockTimeout = TimeSpan.FromSeconds(lockTimeoutInSeconds);
+
             TestInstance<int> instance = await this.testService.RunOrchestration(
                 input: 0,
                 orchestrationName: "ContinueAsNewTest",
