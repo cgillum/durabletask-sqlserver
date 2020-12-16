@@ -378,7 +378,9 @@
                     return input;
                 });
 
-            await instance.WaitForCompletion(expectedOutput: 10, continuedAsNew: true);
+            OrchestrationState state = await instance.WaitForCompletion(expectedOutput: 10, continuedAsNew: true);
+            Assert.NotNull(state.Input);
+            Assert.Equal("10", state.Input);
         }
     }
 }

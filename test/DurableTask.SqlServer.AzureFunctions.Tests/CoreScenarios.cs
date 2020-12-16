@@ -63,9 +63,26 @@ namespace DurableTask.SqlServer.AzureFunctions.Tests
             Assert.Equal(7, (int)status.Output);
         }
 
-        [Fact(Skip = "NYI")]
+        [Fact]
         public async Task CanInteractWithEntities()
         {
+            IDurableClient client = await this.GetDurableClientAsync();
+
+            var entityId = new EntityId(nameof(Functions.Counter), Guid.NewGuid().ToString("N"));
+            EntityStateResponse<int> result = await client.ReadEntityStateAsync<int>(entityId);
+            Assert.False(result.EntityExists);
+
+            await Task.WhenAll(
+                client.SignalEntityAsync(entityId, "incr"),
+                client.SignalEntityAsync(entityId, "incr"),
+                client.SignalEntityAsync(entityId, "incr"),
+                client.SignalEntityAsync(entityId, "add", 4));
+
+            await Task.Delay(TimeSpan.FromSeconds(5));
+
+            result = await client.ReadEntityStateAsync<int>(entityId);
+            Assert.True(result.EntityExists);
+            Assert.Equal(7, result.EntityState);
         }
 
         static class Functions
