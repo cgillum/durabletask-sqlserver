@@ -1,5 +1,7 @@
 ﻿namespace DurableTask.SqlServer.AzureFunctions
 {
+    using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Threading.Tasks;
     using DurableTask.Core;
@@ -32,6 +34,23 @@
         }
 
         public override JObject ConfigurationJson => JObject.FromObject(this.options);
+
+        public override async Task<IList<OrchestrationState>> GetOrchestrationStateWithInputsAsync(string instanceId, bool showInput = true)
+        {
+            OrchestrationState? state = await this.service.GetOrchestrationStateAsync(instanceId, executionId: null);
+            if (state == null)
+            {
+                return Array.Empty<OrchestrationState>();
+            }
+
+            if (!showInput)
+            {
+                // CONSIDER: It would be more efficient to not load the input at all from the data source.
+                state.Input = null;
+            }
+
+            return new[] { state };
+        }
 
         public override async Task<string?> RetrieveSerializedEntityState(EntityId entityId, JsonSerializerSettings serializierSettings)
         {
