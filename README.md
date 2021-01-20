@@ -1,4 +1,6 @@
-﻿# Microsoft SQL Provider for the Durable Task Framework
+## This project has moved! https://github.com/Azure/durabletask-mssql
+
+# Microsoft SQL Provider for the Durable Task Framework
 
 [![Build status](https://github.com/cgillum/durabletask-sqlserver/workflows/Build%20and%20Test/badge.svg)](https://github.com/cgillum/durabletask-sqlserver/actions?workflow=Build+and+Test)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
